@@ -69,6 +69,7 @@ def get_weather(location, date_end):
   
   hourly_dataframe = pd.DataFrame(data = hourly_data)
   print(hourly_dataframe)
+  return hourly_dataframe
 
 
 get_weather("Kyiv", "2024-01-25")
