@@ -9,4 +9,4 @@ Where Kyiv is place where you want to know weather predicting, 2025-01-25 - date
 
 As response you will receive (for example)  
 
-![wowImage](https://imgur.com/a/5rTzQXF)
+![wowImage](https://i.imgur.com/bD0SRh4.png)
