@@ -1,5 +1,5 @@
 
-# pip install openmeteo-requests requests-cache retry-requests numpy pandas
+# pip install openmeteo-requests requests-cache retry-requests numpy pandas prophet
 
 from geopy.geocoders import Nominatim 
 import openmeteo_requests
@@ -9,16 +9,24 @@ import pandas as pd
 from retry_requests import retry
 import datetime
 from datetime import timedelta
+
+from prophet import Prophet
+
+logistic_trend_values = {
+        'relative_humidity_2m' : [0, 100]   
+}
+
   # todo: взяти з аргументів місце, дату
 
   #get_weather("Kyiv", "2024-01-28")
-def get_weather(location, date_end):
+
+def get_weather(location, date_end, days = 10):
 
   endd = datetime.datetime.strptime(date_end, "%Y-%m-%d")
   today = datetime.datetime.now()
   if today - timedelta(5) < endd:
     print("oh fuck, service dont have info about last 5 days ()") #todo
-  startt = (endd - timedelta(10)).strftime("%Y-%m-%d")
+  startt = (endd - timedelta(days)).strftime("%Y-%m-%d")
   
   # Setup the Open-Meteo API client with cache and retry on error
   cache_session = requests_cache.CachedSession('.cache', expire_after = -1)
@@ -72,4 +80,37 @@ def get_weather(location, date_end):
   return hourly_dataframe
 
 
+def forecast(location, date_start, predict_days):
+    
+  df = get_weather(location, date_start, 30)
+  df = df.dropna()
+  result = pd.DataFrame()
+  for column in df.columns.to_list()[1:]:
+    train_df = pd.DataFrame()
+    train_df['ds'] = df['date']
+    train_df['y'] = df[column]
+    is_logistic = column in logistic_trend_values
+    
+    if(is_logistic):
+      train_df['floor'] = logistic_trend_values[column][0]
+      train_df['cap'] = logistic_trend_values[column][1]
+
+    model = Prophet(growth= "logistic" if is_logistic else "linear")
+    model.fit(train_df)
+    future = model.make_future_dataframe(periods = 24*(predict_days + 1), freq = 'H')
+
+    if(is_logistic):
+      future['floor'] = logistic_trend_values[column][0]
+      future['cap'] = logistic_trend_values[column][1]
+    forecast = model.predict(future)
+    result['date'] = forecast['ds']
+    result[column] = forecast['yhat']
+                                
+  result = result[len(df.index):]
+  result = result.reset_index()
+  result = result.drop(columns=["index"])
+  return result
+
+
 get_weather("Kyiv", "2024-01-25")
+print(forecast("Kyiv","2024-01-25", 5))
