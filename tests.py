@@ -1,6 +1,6 @@
-
+#pip install scikit-learn
 from main import get_weather, forecast
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import r2_score
 import unittest
 from datetime import datetime, timedelta
 
