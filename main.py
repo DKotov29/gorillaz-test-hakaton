@@ -77,7 +77,7 @@ def get_weather(location, date_end, days = 10):
   hourly_data["relative_humidity_2m"] = hourly_relative_humidity_2m
 
   hourly_dataframe = pd.DataFrame(data = hourly_data)
-  print(hourly_dataframe)
+  #print(hourly_dataframe)
   return hourly_dataframe
 
 
@@ -122,4 +122,5 @@ locc = args.location
 ddate = args.date
 
 get_weather(locc, ddate)
-print(forecast(locc, ddate, args.predict_days))
+print(args.predict_days)
+print(forecast(locc, ddate, int(args.predict_days)))
